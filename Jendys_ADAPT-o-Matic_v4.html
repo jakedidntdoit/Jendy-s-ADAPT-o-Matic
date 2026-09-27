@@ -1,0 +1,1628 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jendy's ADAPT-o-Matic</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#0b0c0f; --panel:#14161b; --panel2:#1b1e24; --text:#f4f5f7;
+      --muted:#9ba3af; --border:#2b3038; --accent:#ff7800; --danger:#ff6b6b;
+      --good:#54d38a; --warn:#ffcf5c;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .app { display:grid; grid-template-columns:minmax(340px,440px) minmax(0,1fr); min-height:100vh; }
+    aside {
+      border-right:1px solid var(--border); padding:22px; background:var(--panel);
+      overflow-y:auto; max-height:100vh;
+    }
+    main { min-width:0; padding:22px; overflow-y:auto; max-height:100vh; }
+    h1,h2,h3 { margin:0; }
+    h1 { font-size:23px; }
+    h2 { font-size:15px; margin-bottom:12px; }
+    p { color:var(--muted); }
+    .sub { margin:6px 0 20px; font-size:13px; line-height:1.45; }
+    .section { padding:16px 0; border-top:1px solid var(--border); }
+    .section:first-of-type { border-top:0; padding-top:0; }
+    label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input,select,textarea,button { font:inherit; }
+    input[type="number"],input[type="text"],select,textarea {
+      width:100%; border:1px solid var(--border); border-radius:9px; background:var(--panel2);
+      color:var(--text); padding:10px 11px; outline:none;
+    }
+    textarea { min-height:88px; resize:vertical; line-height:1.35; }
+    input:focus,select:focus,textarea:focus { border-color:#697386; }
+    input[type="color"] {
+      width:100%; height:42px; padding:4px; border:1px solid var(--border);
+      border-radius:9px; background:var(--panel2);
+    }
+    .grid2,.grid3,.grid4 { display:grid; gap:10px; }
+    .grid2 { grid-template-columns:1fr 1fr; }
+    .grid3 { grid-template-columns:repeat(3,1fr); }
+    .grid4 { grid-template-columns:repeat(4,1fr); }
+    .field { margin-bottom:11px; }
+    .check {
+      display:flex; align-items:center; gap:8px; margin:8px 0; color:var(--text); font-size:13px;
+    }
+    .check input { width:auto; }
+    .button {
+      width:100%; border:0; border-radius:10px; padding:11px 14px; cursor:pointer; font-weight:750;
+    }
+    .button.primary { background:var(--accent); color:#111; }
+    .button.secondary { background:#252a33; color:var(--text); border:1px solid var(--border); }
+    .button.ghost { background:#111318; color:var(--text); border:1px solid var(--border); }
+    .button:disabled { opacity:.45; cursor:not-allowed; }
+    .render-controls { display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; }
+    .range-row { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+    input[type="range"] { width:100%; accent-color:var(--accent); }
+    .render-notice {
+      margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:9px;
+      background:#111318; color:var(--muted); font-size:11px; line-height:1.45;
+    }
+    .render-notice.large { border-color:#65531e; color:var(--warn); background:#18160f; }
+    .render-notice.normal { color:var(--good); }
+    .filebox {
+      border:1px dashed #424854; border-radius:12px; padding:14px; background:#111318;
+    }
+    .filebox input { width:100%; }
+    .helper { margin-top:7px; font-size:11px; line-height:1.45; color:var(--muted); }
+    .line-card {
+      padding:12px; border:1px solid var(--border); border-radius:10px; background:#101217; margin-bottom:8px;
+    }
+    .line-title {
+      display:flex; justify-content:space-between; gap:8px; margin-bottom:9px; font-size:12px;
+    }
+    .line-title strong { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .style-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .toggle {
+      display:flex; align-items:center; gap:6px; padding:6px 8px; border:1px solid var(--border);
+      border-radius:8px; background:#171a20; font-size:12px;
+    }
+    .toggle input { width:auto; }
+    .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+    .stat {
+      border:1px solid var(--border); background:var(--panel); border-radius:11px; padding:11px;
+    }
+    .stat small { display:block; color:var(--muted); margin-bottom:4px; }
+    .stat strong { font-size:18px; }
+    .preview-card {
+      border:1px solid var(--border); background:var(--panel); border-radius:12px; padding:14px; margin-bottom:16px;
+    }
+    .preview-card h2 { margin-bottom:4px; }
+    .preview-card p { font-size:12px; margin:0 0 10px; }
+    .preview-wrap {
+      border:1px solid var(--border);
+      background:
+        linear-gradient(45deg,#17191e 25%,transparent 25%) 0 0/24px 24px,
+        linear-gradient(45deg,transparent 75%,#17191e 75%) 0 0/24px 24px,
+        linear-gradient(45deg,transparent 75%,#17191e 75%) 12px -12px/24px 24px,
+        linear-gradient(45deg,#17191e 25%,#101216 25%) 12px -12px/24px 24px;
+      border-radius:12px; padding:12px; overflow:hidden; min-height:250px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    canvas { display:block; max-width:100%; height:auto; border-radius:4px; background:transparent; }
+    .status {
+      margin-top:12px; min-height:42px; padding:10px 12px; border:1px solid var(--border);
+      border-radius:9px; background:#111318; color:var(--muted); font-size:12px; line-height:1.45; white-space:pre-wrap;
+    }
+    .status.good { color:var(--good); }
+    .status.error { color:var(--danger); }
+    .status.warn { color:var(--warn); }
+    progress { width:100%; height:12px; margin-top:8px; }
+    .toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+    .toolbar .button { width:auto; }
+    .pill {
+      display:inline-block; border:1px solid var(--border); border-radius:999px;
+      padding:3px 7px; color:var(--muted); font-size:10px;
+    }
+    .timing-grid,.eco-grid {
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:10px;
+    }
+    .mini {
+      border:1px solid var(--border); border-radius:9px; background:#111318; padding:9px;
+    }
+    .mini small { color:var(--muted); display:block; margin-bottom:3px; font-size:10px; }
+    .mini strong { font-size:14px; }
+    details { margin-top:10px; }
+    summary { cursor:pointer; color:var(--muted); font-size:12px; }
+    .bad-list {
+      max-height:150px; overflow:auto; margin-top:8px; padding:8px; border:1px solid var(--border);
+      border-radius:8px; background:#0e1014; font-size:11px; line-height:1.4; color:#c9ced6;
+    }
+    .brand-joke { color:#d8dce3; font-size:11px; margin-top:3px; }
+    @media (max-width:960px) {
+      .app { grid-template-columns:1fr; }
+      aside,main { max-height:none; }
+      aside { border-right:0; border-bottom:1px solid var(--border); }
+      .stats { grid-template-columns:1fr 1fr; }
+      .timing-grid,.eco-grid { grid-template-columns:1fr; }
+      .render-controls { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>Jendy's ADAPT-o-Matic</h1>
+    <div class="brand-joke">Jake + Wendy + 10 years of gym photos = this questionable piece of software.</div>
+    <p class="sub">
+      Builds the mosaic locally in your browser from the actual photo pixels. No AI redraws, no stretched faces, no nightmare creatures.
+    </p>
+
+    <div class="section">
+      <h2>1. Text & layout</h2>
+      <div class="field">
+        <label for="textInput">Text. Each new line becomes its own mosaic line.</label>
+        <textarea id="textInput">10 YEARS OF
+ADAPT</textarea>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="fontFamily">Font</label>
+          <select id="fontFamily">
+            <option value="Arial Black">Arial Black</option>
+            <option value="Impact">Impact</option>
+            <option value="Arial">Arial</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="lineGap">Gap between lines (px)</label>
+          <input id="lineGap" type="number" min="0" value="100">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="tracking">Letter spacing (px)</label>
+        <input id="tracking" type="number" value="0">
+      </div>
+
+      <div id="lineControls"></div>
+      <div class="helper">
+        Each line can be bold, italic or underlined independently. Width % controls the line width; tile size controls photo size.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2. Output image</h2>
+      <div class="field">
+        <label for="designMode">Design mode</label>
+        <select id="designMode">
+          <option value="text">Photos inside the words</option>
+          <option value="inverse">Inverse: photo background with words over it</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="photoTileSize">Photo tile size (px)</label>
+        <input id="photoTileSize" type="number" min="20" max="1000" value="190">
+        <div class="helper">
+          Lower means smaller photos and more tiles. In standard mode, changing this updates every text line; you can still fine-tune individual lines above.
+        </div>
+      </div>
+
+      <div id="inverseControls" class="line-card" style="display:none">
+        <div class="grid2">
+          <div class="field">
+            <label for="inverseTextColour">Word colour</label>
+            <input id="inverseTextColour" type="color" value="#ff7800">
+          </div>
+          <label class="check" style="align-self:center;margin-top:16px">
+            <input id="inverseTextTransparent" type="checkbox">
+            Transparent words (cut-out)
+          </label>
+        </div>
+        <label class="check">
+          <input id="inverseTextBorder" type="checkbox">
+          Add a border around the words
+        </label>
+        <div id="inverseBorderControls" class="grid2" style="display:none">
+          <div class="field">
+            <label for="inverseBorderColour">Border colour</label>
+            <input id="inverseBorderColour" type="color" value="#ffffff">
+          </div>
+          <div class="field">
+            <label for="inverseBorderWidth">Border width (px)</label>
+            <input id="inverseBorderWidth" type="number" min="1" max="200" value="24">
+          </div>
+        </div>
+        <div class="helper">
+          In inverse mode, photos cover the full canvas. The words are either a solid colour or genuinely transparent in the exported PNG. An optional coloured border can outline either style.
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="printPreset">Print size preset (300 DPI)</label>
+          <select id="printPreset">
+            <option value="custom">Custom pixels</option>
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="A3">A3 (297 × 420 mm)</option>
+            <option value="A2">A2 (420 × 594 mm)</option>
+            <option value="A1">A1 (594 × 841 mm)</option>
+            <option value="B1">B1 (707 × 1000 mm)</option>
+            <option value="A0">A0 (841 × 1189 mm)</option>
+            <option value="B0">B0 (1000 × 1414 mm)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="printOrientation">Orientation</label>
+          <select id="printOrientation">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="canvasWidth">Width (px)</label>
+          <input id="canvasWidth" type="number" min="500" max="20000" value="6000">
+        </div>
+        <div class="field">
+          <label for="canvasHeight">Height (px)</label>
+          <input id="canvasHeight" type="number" min="500" max="20000" value="3000">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="range-row">
+          <label for="outputScale" style="margin:0">Render scale</label>
+          <strong id="outputScaleValue">100%</strong>
+        </div>
+        <input id="outputScale" type="range" min="25" max="100" step="5" value="100">
+        <div id="scaleHelper" class="helper">100% keeps the full pixel dimensions. Lowering this reduces pixels, file size and render load, but also lowers effective print DPI.</div>
+      </div>
+
+      <div id="renderBehaviour" class="render-notice normal">
+        Normal render mode: layout preview and rendered output preview stay available.
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label for="backgroundColour">Background</label>
+        <input id="backgroundColour" type="color" value="#000000">
+      </div>
+      <label class="check">
+        <input id="transparentBg" type="checkbox">
+        Transparent canvas background (standard mode)
+      </label>
+    </div>
+
+    <div class="section">
+      <h2>3. Photos</h2>
+      <div class="filebox">
+        <label for="folderInput">Choose a folder of images</label>
+        <input id="folderInput" type="file" webkitdirectory directory multiple
+               accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/*">
+        <div class="helper">
+          Chrome or Edge recommended. Unsupported/corrupt files are skipped automatically instead of killing the render.
+        </div>
+      </div>
+
+      <label class="check">
+        <input id="requireAll" type="checkbox">
+        Try to use every readable source photo at least once
+      </label>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="maxUses">Maximum preferred uses/photo</label>
+          <input id="maxUses" type="number" min="1" max="100" value="3">
+        </div>
+        <div class="field">
+          <label for="overlap">Tile overlap (px)</label>
+          <input id="overlap" type="number" min="0" max="20" value="4">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="focusX">Crop focus X (%)</label>
+          <input id="focusX" type="number" min="0" max="100" value="50">
+        </div>
+        <div class="field">
+          <label for="focusY">Crop focus Y (%)</label>
+          <input id="focusY" type="number" min="0" max="100" value="44">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="seed">Shuffle seed</label>
+        <input id="seed" type="text" value="jendy-adapt-10-years">
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>4. Colour treatment</h2>
+      <div class="field">
+        <label for="colourMode">Mode</label>
+        <select id="colourMode">
+          <option value="original">Original colour</option>
+          <option value="bw">Black & white</option>
+          <option value="hue">Single colour hue</option>
+        </select>
+      </div>
+
+      <div id="hueControls" style="display:none">
+        <div class="grid2">
+          <div class="field">
+            <label for="hueColour">Hue colour</label>
+            <input id="hueColour" type="color" value="#ff7800">
+          </div>
+          <div class="field">
+            <label for="hueStrength">Hue strength (%)</label>
+            <input id="hueStrength" type="number" min="0" max="100" value="100">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="field">
+          <label for="brightness">Brightness %</label>
+          <input id="brightness" type="number" min="25" max="200" value="100">
+        </div>
+        <div class="field">
+          <label for="contrast">Contrast %</label>
+          <input id="contrast" type="number" min="25" max="200" value="105">
+        </div>
+        <div class="field">
+          <label for="saturation">Saturation %</label>
+          <input id="saturation" type="number" min="0" max="250" value="100">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>5. Generate</h2>
+      <div class="render-controls">
+        <button id="renderBtn" class="button primary" type="button">Render full mosaic</button>
+        <button id="pauseBtn" class="button secondary" type="button" disabled>Pause</button>
+        <button id="cancelBtn" class="button ghost" type="button" disabled>Cancel</button>
+      </div>
+      <progress id="progress" max="100" value="0" hidden></progress>
+
+      <div class="timing-grid">
+        <div class="mini"><small>Estimated time</small><strong id="estimatedTime">—</strong></div>
+        <div class="mini"><small>Elapsed</small><strong id="elapsedTime">0s</strong></div>
+        <div class="mini"><small>ETA remaining</small><strong id="remainingTime">—</strong></div>
+      </div>
+
+      <div id="status" class="status">Choose a folder to begin.</div>
+
+      <details id="skippedDetails" hidden>
+        <summary id="skippedSummary">Skipped files</summary>
+        <div id="skippedList" class="bad-list"></div>
+      </details>
+    </div>
+
+    <div class="section">
+      <h2>Totally scientific eco meter</h2>
+      <div class="eco-grid">
+        <div class="mini"><small>Trees directly harmed</small><strong>0</strong></div>
+        <div class="mini"><small>Water bottles sacrificed</small><strong>0</strong></div>
+        <div class="mini"><small>Approx local electricity*</small><strong id="energyWh">0.00 Wh</strong></div>
+      </div>
+      <div class="helper">
+        *A tongue-in-cheek local estimate using a 45 W active-processing assumption. It is not lifecycle carbon or water accounting.
+        This app processes photos on your device, so there is no honest browser-level way to convert one render into “trees” or “bottles of water”.
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="stats">
+      <div class="stat"><small>Source photos</small><strong id="statPhotos">0</strong></div>
+      <div class="stat"><small>Estimated tile slots</small><strong id="statSlots">—</strong></div>
+      <div class="stat"><small>Average uses</small><strong id="statRepeats">—</strong></div>
+      <div class="stat"><small>Output</small><strong id="statOutput">6000×3000</strong></div>
+    </div>
+
+    <div id="layoutPreviewCard" class="preview-card">
+      <h2>Layout preview</h2>
+      <p>
+        Fast preview only. It shows line placement, styling and approximate tile density without decoding all your photos.
+      </p>
+      <div class="preview-wrap" style="min-height:220px">
+        <canvas id="layoutPreview" width="1200" height="600"></canvas>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="exportBtn" class="button secondary" type="button" disabled>Export PNG</button>
+      <span class="pill">Local browser processing</span>
+      <span class="pill">No generative AI</span>
+      <span class="pill">Bad files auto-skipped</span>
+    </div>
+
+    <div id="outputPreviewCard" class="preview-card">
+      <h2>Rendered output</h2>
+      <p>The full-resolution mosaic appears here after generation.</p>
+      <div class="preview-wrap">
+        <canvas id="outputCanvas" width="1200" height="600"></canvas>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Used only when the browser cannot natively decode a selected HEIC/HEIF.
+     Conversion happens locally in the browser. -->
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  const els = {
+    textInput:$("textInput"), fontFamily:$("fontFamily"), lineGap:$("lineGap"), tracking:$("tracking"),
+    lineControls:$("lineControls"), canvasWidth:$("canvasWidth"), canvasHeight:$("canvasHeight"),
+    printPreset:$("printPreset"), printOrientation:$("printOrientation"), outputScale:$("outputScale"),
+    outputScaleValue:$("outputScaleValue"), scaleHelper:$("scaleHelper"), renderBehaviour:$("renderBehaviour"),
+    designMode:$("designMode"), inverseControls:$("inverseControls"),
+    photoTileSize:$("photoTileSize"), inverseTextColour:$("inverseTextColour"),
+    inverseTextTransparent:$("inverseTextTransparent"), inverseTextBorder:$("inverseTextBorder"),
+    inverseBorderControls:$("inverseBorderControls"), inverseBorderColour:$("inverseBorderColour"),
+    inverseBorderWidth:$("inverseBorderWidth"), backgroundColour:$("backgroundColour"),
+    transparentBg:$("transparentBg"), folderInput:$("folderInput"),
+    requireAll:$("requireAll"), maxUses:$("maxUses"), overlap:$("overlap"), focusX:$("focusX"),
+    focusY:$("focusY"), seed:$("seed"), colourMode:$("colourMode"), hueControls:$("hueControls"),
+    hueColour:$("hueColour"), hueStrength:$("hueStrength"), brightness:$("brightness"),
+    contrast:$("contrast"), saturation:$("saturation"), renderBtn:$("renderBtn"), pauseBtn:$("pauseBtn"),
+    cancelBtn:$("cancelBtn"), exportBtn:$("exportBtn"), progress:$("progress"), status:$("status"),
+    outputCanvas:$("outputCanvas"), layoutPreview:$("layoutPreview"), layoutPreviewCard:$("layoutPreviewCard"),
+    outputPreviewCard:$("outputPreviewCard"),
+    statPhotos:$("statPhotos"), statSlots:$("statSlots"), statRepeats:$("statRepeats"), statOutput:$("statOutput"),
+    estimatedTime:$("estimatedTime"), elapsedTime:$("elapsedTime"), remainingTime:$("remainingTime"),
+    energyWh:$("energyWh"), skippedDetails:$("skippedDetails"), skippedSummary:$("skippedSummary"),
+    skippedList:$("skippedList")
+  };
+
+  const state = {
+    files: [],
+    badFiles: new Map(),
+    convertedBlobs: new Map(),
+    rendered:false,
+    rendering:false,
+    renderName:"photomosaic",
+    estimateTimer:null,
+    timerHandle:null,
+    startMs:0,
+    completedTiles:0,
+    totalTiles:0,
+    observedMsPerTile:null,
+    paused:false,
+    cancelRequested:false,
+    applyingPreset:false
+  };
+
+  const PRINT_PRESETS = {
+    A4:{mm:[210,297],px:[2480,3508]},
+    A3:{mm:[297,420],px:[3508,4961]},
+    A2:{mm:[420,594],px:[4961,7016]},
+    A1:{mm:[594,841],px:[7016,9933]},
+    B1:{mm:[707,1000],px:[8350,11811]},
+    A0:{mm:[841,1189],px:[9933,14043]},
+    B0:{mm:[1000,1414],px:[11811,16701]}
+  };
+  const LARGE_RENDER_PIXELS = 60_000_000;
+  const MAX_RENDER_PIXELS = 220_000_000;
+
+  function setStatus(message, kind="") {
+    els.status.textContent = message;
+    els.status.className = "status" + (kind ? " " + kind : "");
+  }
+
+  function getRenderSize() {
+    const baseW=Number(els.canvasWidth.value||0), baseH=Number(els.canvasHeight.value||0);
+    const scalePct=Math.max(25,Math.min(100,Number(els.outputScale.value||100)));
+    return {
+      baseW, baseH, scalePct,
+      W:Math.max(1,Math.round(baseW*scalePct/100)),
+      H:Math.max(1,Math.round(baseH*scalePct/100))
+    };
+  }
+
+  function isLargeRender(W,H) { return W*H > LARGE_RENDER_PIXELS; }
+
+  function updateRenderBehaviour() {
+    const {W,H,scalePct}=getRenderSize();
+    const pixels=W*H, mp=pixels/1e6, large=isLargeRender(W,H);
+    els.outputScaleValue.textContent=`${scalePct}%`;
+    els.statOutput.textContent=`${W.toLocaleString()}×${H.toLocaleString()}`;
+
+    const preset=PRINT_PRESETS[els.printPreset.value];
+    if (preset) {
+      const effectiveDpi=Math.round(300*scalePct/100);
+      els.scaleHelper.textContent=scalePct===100
+        ? `100% = ${W.toLocaleString()} × ${H.toLocaleString()} px, preserving 300 DPI for ${els.printPreset.value}.`
+        : `${scalePct}% = ${W.toLocaleString()} × ${H.toLocaleString()} px, about ${effectiveDpi} DPI at the same ${els.printPreset.value} print size. Use 100% if you need true 300 DPI.`;
+    } else {
+      els.scaleHelper.textContent=`${scalePct}% renders ${W.toLocaleString()} × ${H.toLocaleString()} px. Lowering the slider reduces total pixels and render load.`;
+    }
+
+    if (large) {
+      els.renderBehaviour.className="render-notice large";
+      els.renderBehaviour.textContent=`Large render mode: ${mp.toFixed(1)} million pixels. To reduce browser load, the layout preview and on-page rendered preview will be hidden. When generation finishes, the PNG will download automatically and the full-resolution canvas will be cleared from memory.`;
+      els.layoutPreviewCard.hidden=true;
+      els.outputPreviewCard.hidden=true;
+    } else {
+      els.renderBehaviour.className="render-notice normal";
+      els.renderBehaviour.textContent=`Normal render mode: ${mp.toFixed(1)} million pixels. Layout preview and rendered output preview stay available, and you can export manually after rendering.`;
+      els.layoutPreviewCard.hidden=false;
+      els.outputPreviewCard.hidden=false;
+    }
+  }
+
+  function applyPrintPreset() {
+    const preset=PRINT_PRESETS[els.printPreset.value];
+    if (!preset) return;
+    let [w,h]=preset.px;
+    if (els.printOrientation.value==="landscape") [w,h]=[h,w];
+    state.applyingPreset=true;
+    els.canvasWidth.value=w; els.canvasHeight.value=h;
+    state.applyingPreset=false;
+    scheduleEstimateAndPreview();
+  }
+
+  async function renderCheckpoint() {
+    if (state.cancelRequested) throw new Error("__RENDER_CANCELLED__");
+    while (state.paused && !state.cancelRequested) {
+      await new Promise(resolve=>setTimeout(resolve,120));
+    }
+    if (state.cancelRequested) throw new Error("__RENDER_CANCELLED__");
+  }
+
+  function formatDuration(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) return "—";
+    if (seconds < 60) return `${Math.max(1, Math.round(seconds))}s`;
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return `${m}m ${s}s`;
+  }
+
+  function setProgress(value, message) {
+    els.progress.hidden = false;
+    els.progress.value = Math.max(0, Math.min(100, value));
+    if (message) setStatus(message);
+  }
+
+  function hideProgress() { els.progress.hidden = true; }
+
+  function cleanLines() {
+    return els.textInput.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, c => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+    }[c]));
+  }
+
+  function currentLineSettings() {
+    return [...els.lineControls.querySelectorAll(".line-card")].map(card => ({
+      widthPct:Number(card.querySelector(".line-width").value),
+      tileSize:Number(card.querySelector(".line-tile").value),
+      bold:card.querySelector(".line-bold").checked,
+      italic:card.querySelector(".line-italic").checked,
+      underline:card.querySelector(".line-underline").checked
+    }));
+  }
+
+  function rebuildLineControls() {
+    const old = currentLineSettings();
+    const lines = cleanLines();
+    els.lineControls.innerHTML = "";
+
+    lines.forEach((line,index) => {
+      const isLast = index === lines.length - 1;
+      const prev = old[index] || {};
+      const widthDefault = prev.widthPct ?? (lines.length === 1 ? 90 : (isLast ? 90 : 70));
+      const tileDefault = prev.tileSize ?? (isLast ? 190 : 170);
+      const boldDefault = prev.bold ?? true;
+      const italicDefault = prev.italic ?? false;
+      const underlineDefault = prev.underline ?? false;
+
+      const card = document.createElement("div");
+      card.className = "line-card";
+      card.innerHTML = `
+        <div class="line-title">
+          <strong>Line ${index+1}: ${escapeHtml(line)}</strong>
+          <span>${isLast && lines.length > 1 ? "hero line" : ""}</span>
+        </div>
+        <div class="grid2">
+          <div>
+            <label>Line width (%)</label>
+            <input class="line-width" type="number" min="10" max="98" value="${widthDefault}">
+          </div>
+          <div>
+            <label>Tile size (px)</label>
+            <input class="line-tile" type="number" min="20" max="1000" value="${tileDefault}">
+          </div>
+        </div>
+        <div class="style-row">
+          <label class="toggle"><input class="line-bold" type="checkbox" ${boldDefault ? "checked" : ""}> <strong>B</strong> Bold</label>
+          <label class="toggle"><input class="line-italic" type="checkbox" ${italicDefault ? "checked" : ""}> <em>I</em> Italic</label>
+          <label class="toggle"><input class="line-underline" type="checkbox" ${underlineDefault ? "checked" : ""}> <u>U</u> Underline</label>
+        </div>`;
+      els.lineControls.appendChild(card);
+    });
+
+    els.lineControls.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", scheduleEstimateAndPreview);
+      input.addEventListener("change", scheduleEstimateAndPreview);
+    });
+
+    scheduleEstimateAndPreview();
+  }
+
+  function fontString(size, style) {
+    const italic = style.italic ? "italic " : "";
+    const weight = style.bold ? "900" : "400";
+    return `${italic}${weight} ${size}px "${els.fontFamily.value}"`;
+  }
+
+  function measureTracked(ctx,text,size,tracking,style) {
+    ctx.font = fontString(size, style);
+    let width = 0;
+    for (let i=0;i<text.length;i++) {
+      width += ctx.measureText(text[i]).width;
+      if (i < text.length-1) width += tracking;
+    }
+    return width;
+  }
+
+  function fitFontSize(ctx,text,targetWidth,tracking,style) {
+    const base = 1000;
+    const measured = Math.max(1, measureTracked(ctx,text,base,tracking,style));
+    return Math.max(10, base * targetWidth / measured);
+  }
+
+  function lineMetrics(ctx,text,size,style) {
+    ctx.font = fontString(size,style);
+    const m = ctx.measureText(text);
+    const ascent = m.actualBoundingBoxAscent || size*0.75;
+    const descent = m.actualBoundingBoxDescent || size*0.2;
+    const underlineExtra = style.underline ? size*0.08 : 0;
+    return { ascent, descent, height:ascent+descent+underlineExtra };
+  }
+
+  function computeLayouts(W,H,lineSettings,scale=1) {
+    const lines = cleanLines();
+    const tracking = Number(els.tracking.value || 0) * scale;
+    const gap = Number(els.lineGap.value || 0) * scale;
+    const probe = document.createElement("canvas").getContext("2d");
+
+    const layouts = lines.map((text,i) => {
+      const style = lineSettings[i];
+      const targetWidth = W * (style.widthPct/100);
+      const size = fitFontSize(probe,text,targetWidth,tracking,style);
+      const metrics = lineMetrics(probe,text,size,style);
+      return {
+        text, fontSize:size, tracking, widthPct:style.widthPct, tileSize:style.tileSize*scale,
+        bold:style.bold, italic:style.italic, underline:style.underline, ...metrics
+      };
+    });
+
+    const totalHeight = layouts.reduce((sum,l)=>sum+l.height,0) + gap*Math.max(0,layouts.length-1);
+    let top = (H-totalHeight)/2;
+
+    for (const l of layouts) {
+      l.top = top;
+      l.baseline = top+l.ascent;
+      top += l.height+gap;
+    }
+    return layouts;
+  }
+
+  function drawTrackedText(ctx,text,x,baseline,size,tracking,style,colour="#fff") {
+    ctx.font = fontString(size,style);
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = colour;
+    let cursor = x;
+    for (let i=0;i<text.length;i++) {
+      ctx.fillText(text[i],cursor,baseline);
+      cursor += ctx.measureText(text[i]).width + (i<text.length-1 ? tracking : 0);
+    }
+    if (style.underline) {
+      const textWidth = measureTracked(ctx,text,size,tracking,style);
+      const thickness = Math.max(2,size*0.045);
+      ctx.fillRect(x,baseline+size*0.06,textWidth,thickness);
+    }
+  }
+
+  function drawLineMask(maskCanvas,layout,W,H) {
+    maskCanvas.width = W; maskCanvas.height = H;
+    const ctx = maskCanvas.getContext("2d",{willReadFrequently:true});
+    ctx.clearRect(0,0,W,H);
+    const lineWidth = W*(layout.widthPct/100);
+    const x = (W-lineWidth)/2;
+    drawTrackedText(ctx,layout.text,x,layout.baseline,layout.fontSize,layout.tracking,layout);
+    return ctx;
+  }
+
+  function drawCombinedTextMask(maskCanvas,layouts,W,H) {
+    maskCanvas.width=W; maskCanvas.height=H;
+    const ctx=maskCanvas.getContext("2d",{willReadFrequently:true});
+    ctx.clearRect(0,0,W,H);
+    for (const layout of layouts) {
+      const lineWidth=W*(layout.widthPct/100);
+      const x=(W-lineWidth)/2;
+      drawTrackedText(ctx,layout.text,x,layout.baseline,layout.fontSize,layout.tracking,layout);
+    }
+    return ctx;
+  }
+
+  function drawCombinedTextDirect(ctx,layouts,W,colour) {
+    for (const layout of layouts) {
+      const lineWidth=W*(layout.widthPct/100);
+      const x=(W-lineWidth)/2;
+      drawTrackedText(ctx,layout.text,x,layout.baseline,layout.fontSize,layout.tracking,layout,colour);
+    }
+  }
+
+  function drawTrackedTextStroke(ctx,text,x,baseline,size,tracking,style,lineWidth,colour="#fff") {
+    ctx.font=fontString(size,style);
+    ctx.textBaseline="alphabetic";
+    ctx.strokeStyle=colour;
+    ctx.lineWidth=lineWidth;
+    ctx.lineJoin="round";
+    ctx.miterLimit=2;
+    let cursor=x;
+    for (let i=0;i<text.length;i++) {
+      ctx.strokeText(text[i],cursor,baseline);
+      cursor+=ctx.measureText(text[i]).width+(i<text.length-1?tracking:0);
+    }
+    if (style.underline) {
+      const textWidth=measureTracked(ctx,text,size,tracking,style);
+      const thickness=Math.max(2,size*0.045);
+      ctx.strokeRect(x,baseline+size*0.06,textWidth,thickness);
+    }
+  }
+
+  function drawCombinedTextStrokeMask(maskCanvas,layouts,W,H,lineWidth) {
+    maskCanvas.width=W; maskCanvas.height=H;
+    const ctx=maskCanvas.getContext("2d",{willReadFrequently:true});
+    ctx.clearRect(0,0,W,H);
+    for (const layout of layouts) {
+      const lineWidthPx=W*(layout.widthPct/100);
+      const x=(W-lineWidthPx)/2;
+      drawTrackedTextStroke(ctx,layout.text,x,layout.baseline,layout.fontSize,layout.tracking,layout,lineWidth);
+    }
+    return ctx;
+  }
+
+  function drawCombinedTextStrokeDirect(ctx,layouts,W,lineWidth,colour) {
+    for (const layout of layouts) {
+      const lineWidthPx=W*(layout.widthPct/100);
+      const x=(W-lineWidthPx)/2;
+      drawTrackedTextStroke(
+        ctx,layout.text,x,layout.baseline,layout.fontSize,layout.tracking,layout,lineWidth,colour
+      );
+    }
+  }
+
+  function drawColourThroughMask(targetCtx,maskCanvas,colour,W,H) {
+    const solid=document.createElement("canvas");
+    solid.width=W; solid.height=H;
+    const solidCtx=solid.getContext("2d");
+    solidCtx.fillStyle=colour;
+    solidCtx.fillRect(0,0,W,H);
+    solidCtx.globalCompositeOperation="destination-in";
+    solidCtx.drawImage(maskCanvas,0,0);
+    targetCtx.drawImage(solid,0,0);
+  }
+
+  function collectBackgroundCells(W,H,tileSize) {
+    const size=Math.max(4,Math.round(tileSize));
+    const cells=[];
+    for (let y=0;y<H;y+=size) {
+      for (let x=0;x<W;x+=size) cells.push({x,y,size});
+    }
+    return cells;
+  }
+
+  function collectCells(maskCtx,W,H,tileSize) {
+    const size = Math.max(4,Math.round(tileSize));
+    const imageData = maskCtx.getImageData(0,0,W,H).data;
+    const cells = [];
+
+    const hasInk = (x,y) => {
+      x = Math.max(0,Math.min(W-1,Math.floor(x)));
+      y = Math.max(0,Math.min(H-1,Math.floor(y)));
+      return imageData[(y*W+x)*4+3] > 8;
+    };
+
+    for (let y=0;y<H;y+=size) {
+      for (let x=0;x<W;x+=size) {
+        const x2 = Math.min(W-1,x+size-1), y2 = Math.min(H-1,y+size-1);
+        const xm = (x+x2)/2, ym=(y+y2)/2;
+        if (
+          hasInk(x,y)||hasInk(x2,y)||hasInk(x,y2)||hasInk(x2,y2)||
+          hasInk(xm,y)||hasInk(xm,y2)||hasInk(x,ym)||hasInk(x2,ym)||hasInk(xm,ym)
+        ) cells.push({x,y,size});
+      }
+    }
+    return cells;
+  }
+
+  function xmur3(str) {
+    let h=1779033703^str.length;
+    for (let i=0;i<str.length;i++) {
+      h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19;
+    }
+    return function() {
+      h=Math.imul(h^(h>>>16),2246822507);
+      h=Math.imul(h^(h>>>13),3266489909);
+      return (h^=h>>>16)>>>0;
+    };
+  }
+  function mulberry32(a) {
+    return function() {
+      let t=a+=0x6D2B79F5;
+      t=Math.imul(t^t>>>15,t|1);
+      t^=t+Math.imul(t^t>>>7,t|61);
+      return ((t^t>>>14)>>>0)/4294967296;
+    };
+  }
+  function shuffle(array,rand) {
+    for (let i=array.length-1;i>0;i--) {
+      const j=Math.floor(rand()*(i+1)); [array[i],array[j]]=[array[j],array[i]];
+    }
+    return array;
+  }
+
+  function makeCandidateOrder(preferredIndex,uses,maxUses,rand) {
+    const all = [...Array(state.files.length).keys()];
+    const primary = [];
+    if (preferredIndex != null && !state.badFiles.has(preferredIndex)) primary.push(preferredIndex);
+
+    const underCap = all.filter(i =>
+      i !== preferredIndex && !state.badFiles.has(i) && uses[i] < maxUses
+    );
+    shuffle(underCap,rand);
+
+    const emergency = all.filter(i =>
+      i !== preferredIndex && !state.badFiles.has(i) && uses[i] >= maxUses
+    );
+    shuffle(emergency,rand);
+
+    return [...primary,...underCap,...emergency];
+  }
+
+  function buildPreferredAssignments(totalSlots) {
+    const n=state.files.length;
+    if (!n) throw new Error("Choose a folder of images first.");
+    const maxUses=Math.max(1,Number(els.maxUses.value||1));
+    const readableCount=Math.max(0,n-state.badFiles.size);
+
+    if (els.requireAll.checked && totalSlots < readableCount) {
+      throw new Error(
+        `The layout has ${totalSlots} tile slots but there are about ${readableCount} readable photos. ` +
+        `Reduce tile size or untick “Try to use every readable source photo”.`
+      );
+    }
+
+    const seedFn=xmur3(els.seed.value||"photomosaic"), rand=mulberry32(seedFn());
+    const assignments=[], uses=new Array(n).fill(0);
+    const good = [...Array(n).keys()].filter(i=>!state.badFiles.has(i));
+
+    while (assignments.length<totalSlots && good.length) {
+      const batch=good.filter(i=>uses[i]<maxUses);
+      if (!batch.length) break;
+      shuffle(batch,rand);
+      for (const idx of batch) {
+        if (assignments.length>=totalSlots) break;
+        uses[idx]++; assignments.push(idx);
+      }
+    }
+
+    // Do not abort if the repeat cap is too low. Keep rendering and warn later.
+    while (assignments.length<totalSlots && good.length) {
+      const batch=[...good];
+      shuffle(batch,rand);
+      for (const idx of batch) {
+        if (assignments.length>=totalSlots) break;
+        uses[idx]++; assignments.push(idx);
+      }
+    }
+
+    if (!assignments.length) throw new Error("No readable source photos are available.");
+
+    return {assignments,uses,rand,maxUses};
+  }
+
+  function hexToRgb(hex) {
+    const v=hex.replace("#","");
+    return {r:parseInt(v.slice(0,2),16),g:parseInt(v.slice(2,4),16),b:parseInt(v.slice(4,6),16)};
+  }
+
+  function applyMonochrome(ctx,w,h,mode) {
+    if (mode==="original") return;
+    const image=ctx.getImageData(0,0,w,h), d=image.data;
+    let hue={r:255,g:120,b:0}, strength=1;
+    if (mode==="hue") {
+      hue=hexToRgb(els.hueColour.value);
+      strength=Math.max(0,Math.min(1,Number(els.hueStrength.value||100)/100));
+    }
+    for (let i=0;i<d.length;i+=4) {
+      const lum=Math.round(0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2]);
+      if (mode==="bw") d[i]=d[i+1]=d[i+2]=lum;
+      else {
+        const tr=hue.r*lum/255,tg=hue.g*lum/255,tb=hue.b*lum/255;
+        d[i]=Math.round(lum*(1-strength)+tr*strength);
+        d[i+1]=Math.round(lum*(1-strength)+tg*strength);
+        d[i+2]=Math.round(lum*(1-strength)+tb*strength);
+      }
+    }
+    ctx.putImageData(image,0,0);
+  }
+
+  async function decodeBitmap(item,index) {
+    const name=item.file.name.toLowerCase();
+
+    // Always try native decoding first, including HEIC/HEIF.
+    try {
+      return await createImageBitmap(item.file,{imageOrientation:"from-image"});
+    } catch (_) {}
+
+    const isHeic=name.endsWith(".heic")||name.endsWith(".heif");
+    if (!isHeic) throw new Error("Browser could not decode this image.");
+
+    if (!window.heic2any) throw new Error("HEIC conversion helper could not load.");
+
+    let blob=state.convertedBlobs.get(index);
+    if (!blob) {
+      try {
+        const result=await window.heic2any({blob:item.file,toType:"image/jpeg",quality:0.94});
+        blob=Array.isArray(result)?result[0]:result;
+        state.convertedBlobs.set(index,blob);
+      } catch (err) {
+        throw new Error(err?.message || "HEIC/HEIF format not supported.");
+      }
+    }
+
+    try {
+      return await createImageBitmap(blob,{imageOrientation:"from-image"});
+    } catch (_) {
+      return await new Promise((resolve,reject)=>{
+        const url=URL.createObjectURL(blob), img=new Image();
+        img.onload=()=>{URL.revokeObjectURL(url);resolve(img);};
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Converted HEIC could not be decoded."));};
+        img.src=url;
+      });
+    }
+  }
+
+  function drawCover(ctx,source,x,y,w,h,focusX,focusY) {
+    const sw0=source.width,sh0=source.height,srcRatio=sw0/sh0,dstRatio=w/h;
+    let sw,sh;
+    if (srcRatio>dstRatio) { sh=sh0; sw=sh0*dstRatio; }
+    else { sw=sw0; sh=sw0/dstRatio; }
+    const sx=Math.max(0,Math.min(sw0-sw,(sw0-sw)*focusX));
+    const sy=Math.max(0,Math.min(sh0-sh,(sh0-sh)*focusY));
+    ctx.drawImage(source,sx,sy,sw,sh,x,y,w,h);
+  }
+
+  async function tryRenderTile(fieldCtx,fileIndex,cell,overlap,tileCanvas,tileCtx) {
+    const item=state.files[fileIndex];
+    const size=Math.round(cell.size), drawSize=size+overlap;
+    tileCanvas.width=drawSize; tileCanvas.height=drawSize;
+
+    const bitmap=await decodeBitmap(item,fileIndex);
+
+    tileCtx.clearRect(0,0,drawSize,drawSize);
+    tileCtx.filter=
+      `brightness(${Number(els.brightness.value||100)}%) `+
+      `contrast(${Number(els.contrast.value||100)}%) `+
+      `saturate(${Number(els.saturation.value||100)}%)`;
+
+    drawCover(
+      tileCtx,bitmap,0,0,drawSize,drawSize,
+      Math.max(0,Math.min(1,Number(els.focusX.value||50)/100)),
+      Math.max(0,Math.min(1,Number(els.focusY.value||50)/100))
+    );
+    tileCtx.filter="none";
+    applyMonochrome(tileCtx,drawSize,drawSize,els.colourMode.value);
+
+    fieldCtx.drawImage(tileCanvas,cell.x-overlap/2,cell.y-overlap/2);
+
+    if (bitmap && typeof bitmap.close==="function") bitmap.close();
+  }
+
+  async function renderTileWithFallback(fieldCtx,preferredIndex,cell,overlap,tileCanvas,tileCtx,uses,rand,maxUses) {
+    const candidates=makeCandidateOrder(preferredIndex,uses,maxUses,rand);
+
+    for (const idx of candidates) {
+      try {
+        await tryRenderTile(fieldCtx,idx,cell,overlap,tileCanvas,tileCtx);
+        uses[idx]=(uses[idx]||0)+1;
+        return idx;
+      } catch (err) {
+        if (!state.badFiles.has(idx)) {
+          state.badFiles.set(idx,`${state.files[idx].file.name}: ${err?.message || String(err)}`);
+          updateSkippedUi();
+        }
+      }
+    }
+    return null;
+  }
+
+  function updateSkippedUi() {
+    if (!state.badFiles.size) {
+      els.skippedDetails.hidden=true;
+      return;
+    }
+    els.skippedDetails.hidden=false;
+    els.skippedSummary.textContent=`Skipped files (${state.badFiles.size})`;
+    els.skippedList.textContent=[...state.badFiles.values()].join("\n");
+  }
+
+  function tileHasText(layout,W,cell,maskCanvas,maskCtx) {
+    const size=Math.max(4,Math.round(cell.size));
+    maskCanvas.width=size; maskCanvas.height=size;
+    maskCtx.clearRect(0,0,size,size);
+    const lineWidth=W*(layout.widthPct/100);
+    const textX=(W-lineWidth)/2;
+    drawTrackedText(maskCtx,layout.text,textX-cell.x,layout.baseline-cell.y,layout.fontSize,layout.tracking,layout);
+    const data=maskCtx.getImageData(0,0,size,size).data;
+    for (let i=3;i<data.length;i+=4) if (data[i]>8) return true;
+    return false;
+  }
+
+  async function collectFullLayout(W,H) {
+    const settings=currentLineSettings();
+    const layouts=computeLayouts(W,H,settings,1);
+    const lineData=[];
+    const maskCanvas=document.createElement("canvas");
+    const maskCtx=maskCanvas.getContext("2d",{willReadFrequently:true});
+
+    for (const layout of layouts) {
+      const size=Math.max(4,Math.round(layout.tileSize));
+      const lineWidth=W*(layout.widthPct/100);
+      const textX=(W-lineWidth)/2;
+      const pad=Math.max(size,layout.fontSize*0.08);
+      const x0=Math.max(0,Math.floor((textX-pad)/size)*size);
+      const x1=Math.min(W,Math.ceil((textX+lineWidth+pad)/size)*size);
+      const y0=Math.max(0,Math.floor((layout.top-pad)/size)*size);
+      const y1=Math.min(H,Math.ceil((layout.baseline+layout.descent+pad)/size)*size);
+      const cells=[];
+
+      for (let y=y0;y<y1;y+=size) {
+        for (let x=x0;x<x1;x+=size) {
+          const cell={x,y,size};
+          if (tileHasText(layout,W,cell,maskCanvas,maskCtx)) cells.push(cell);
+        }
+        if ((y-y0)%(size*10)===0) await renderCheckpoint();
+      }
+      lineData.push({layout:{...layout},cells});
+    }
+    return lineData;
+  }
+
+  async function tryRenderClippedTile(targetCtx,fileIndex,cell,overlap,tileCanvas,tileCtx,maskCanvas,maskCtx,layout,W) {
+    const item=state.files[fileIndex];
+    const size=Math.round(cell.size), drawSize=size+overlap;
+    const drawX=cell.x-overlap/2, drawY=cell.y-overlap/2;
+    tileCanvas.width=drawSize; tileCanvas.height=drawSize;
+    maskCanvas.width=drawSize; maskCanvas.height=drawSize;
+
+    const bitmap=await decodeBitmap(item,fileIndex);
+    tileCtx.clearRect(0,0,drawSize,drawSize);
+    tileCtx.filter=
+      `brightness(${Number(els.brightness.value||100)}%) `+
+      `contrast(${Number(els.contrast.value||100)}%) `+
+      `saturate(${Number(els.saturation.value||100)}%)`;
+    drawCover(
+      tileCtx,bitmap,0,0,drawSize,drawSize,
+      Math.max(0,Math.min(1,Number(els.focusX.value||50)/100)),
+      Math.max(0,Math.min(1,Number(els.focusY.value||50)/100))
+    );
+    tileCtx.filter="none";
+    applyMonochrome(tileCtx,drawSize,drawSize,els.colourMode.value);
+
+    maskCtx.clearRect(0,0,drawSize,drawSize);
+    const lineWidth=W*(layout.widthPct/100);
+    const textX=(W-lineWidth)/2;
+    drawTrackedText(maskCtx,layout.text,textX-drawX,layout.baseline-drawY,layout.fontSize,layout.tracking,layout);
+    tileCtx.globalCompositeOperation="destination-in";
+    tileCtx.drawImage(maskCanvas,0,0);
+    tileCtx.globalCompositeOperation="source-over";
+    targetCtx.drawImage(tileCanvas,drawX,drawY);
+
+    if (bitmap && typeof bitmap.close==="function") bitmap.close();
+  }
+
+  async function renderClippedTileWithFallback(targetCtx,preferredIndex,cell,overlap,tileCanvas,tileCtx,maskCanvas,maskCtx,layout,W,uses,rand,maxUses) {
+    const candidates=makeCandidateOrder(preferredIndex,uses,maxUses,rand);
+    for (const idx of candidates) {
+      try {
+        await tryRenderClippedTile(targetCtx,idx,cell,overlap,tileCanvas,tileCtx,maskCanvas,maskCtx,layout,W);
+        uses[idx]=(uses[idx]||0)+1;
+        return idx;
+      } catch (err) {
+        if (!state.badFiles.has(idx)) {
+          state.badFiles.set(idx,`${state.files[idx].file.name}: ${err?.message || String(err)}`);
+          updateSkippedUi();
+        }
+      }
+    }
+    return null;
+  }
+
+  function currentLayouts(W,H,scale=1) {
+    return computeLayouts(W,H,currentLineSettings(),scale);
+  }
+
+  function countHeic() {
+    return state.files.filter(item=>/\.(heic|heif)$/i.test(item.file.name)).length;
+  }
+
+  function roughTimeEstimate(slots,W,H) {
+    if (!slots) return NaN;
+    const mp=(W*H)/1e6;
+    const heic=countHeic();
+    const uniqueFactor=Math.min(slots,state.files.length||slots);
+    let seconds=slots*0.055 + mp*0.18;
+    if (state.files.length) seconds += heic/state.files.length*uniqueFactor*0.35;
+    if (state.observedMsPerTile) seconds=(state.observedMsPerTile/1000)*slots + mp*0.10;
+    return Math.max(2,seconds);
+  }
+
+  function updateLiveTiming() {
+    if (!state.rendering) return;
+    const elapsed=(performance.now()-state.startMs)/1000;
+    els.elapsedTime.textContent=formatDuration(elapsed);
+    els.energyWh.textContent=(45*(elapsed/3600)).toFixed(2)+" Wh";
+
+    if (state.completedTiles>2 && state.totalTiles>state.completedTiles) {
+      const msPerTile=(performance.now()-state.startMs)/state.completedTiles;
+      const remaining=(state.totalTiles-state.completedTiles)*msPerTile/1000;
+      els.remainingTime.textContent=formatDuration(remaining);
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    state.startMs=performance.now();
+    state.completedTiles=0;
+    els.elapsedTime.textContent="0s";
+    els.remainingTime.textContent=els.estimatedTime.textContent;
+    els.energyWh.textContent="0.00 Wh";
+    state.timerHandle=setInterval(updateLiveTiming,250);
+  }
+
+  function stopTimer() {
+    if (state.timerHandle) clearInterval(state.timerHandle);
+    state.timerHandle=null;
+  }
+
+  async function renderMosaic() {
+    if (state.rendering) return;
+
+    const {W,H}=getRenderSize();
+    const largeMode=isLargeRender(W,H);
+
+    try {
+      state.rendering=true;
+      state.paused=false;
+      state.cancelRequested=false;
+      els.renderBtn.disabled=true;
+      els.pauseBtn.disabled=false;
+      els.pauseBtn.textContent="Pause";
+      els.cancelBtn.disabled=false;
+      els.exportBtn.disabled=true;
+      state.rendered=false;
+
+      const inverse=els.designMode.value==="inverse";
+      const pixels=W*H;
+      if (!Number.isFinite(W)||!Number.isFinite(H)||W<500||H<500) throw new Error("Choose a valid output size.");
+      if (W>20000||H>20000) throw new Error("Keep each output dimension at or below 20,000 px.");
+      if (pixels>MAX_RENDER_PIXELS) throw new Error("That render is over 220 million pixels. Reduce the render scale or dimensions slightly.");
+      if (!cleanLines().length) throw new Error("Enter some text first.");
+      if (!state.files.length) throw new Error("Choose a folder of photos first.");
+
+      setProgress(2,inverse ? "Calculating background mosaic layout…" : "Calculating low-memory text layout…");
+      const lineData=inverse ? [] : await collectFullLayout(W,H);
+      await renderCheckpoint();
+      const inverseCells=inverse
+        ? collectBackgroundCells(W,H,Number(els.photoTileSize.value||190))
+        : [];
+      const totalSlots=inverse
+        ? inverseCells.length
+        : lineData.reduce((sum,line)=>sum+line.cells.length,0);
+      const assignmentData=buildPreferredAssignments(totalSlots);
+      const preferred=assignmentData.assignments;
+      const actualUses=new Array(state.files.length).fill(0);
+
+      state.totalTiles=totalSlots;
+      els.statSlots.textContent=totalSlots.toLocaleString();
+      els.statRepeats.textContent=(totalSlots/state.files.length).toFixed(2)+"×";
+      els.estimatedTime.textContent=formatDuration(roughTimeEstimate(totalSlots,W,H));
+
+      startTimer();
+
+      const output=els.outputCanvas;
+      output.width=W; output.height=H;
+      const outCtx=output.getContext("2d");
+      if (!outCtx) throw new Error("The browser could not allocate the output canvas. Reduce render scale slightly or close other memory-heavy tabs and apps.");
+      outCtx.clearRect(0,0,W,H);
+      if (!els.transparentBg.checked || inverse) {
+        outCtx.fillStyle=els.backgroundColour.value; outCtx.fillRect(0,0,W,H);
+      }
+
+      const tileCanvas=document.createElement("canvas");
+      const tileCtx=tileCanvas.getContext("2d",{willReadFrequently:true});
+      const maskCanvas=document.createElement("canvas");
+      const maskCtx=maskCanvas.getContext("2d",{willReadFrequently:true});
+
+      const overlap=Math.max(0,Number(els.overlap.value||0));
+      const yieldEvery=totalSlots>3000?20:4;
+      let cursor=0, filled=0;
+
+      if (inverse) {
+        for (const cell of inverseCells) {
+          await renderCheckpoint();
+          const pref=preferred[cursor % preferred.length];
+          cursor++;
+          const used=await renderTileWithFallback(
+            outCtx,pref,cell,overlap,tileCanvas,tileCtx,
+            actualUses,assignmentData.rand,assignmentData.maxUses
+          );
+          if (used !== null) filled++;
+          state.completedTiles++;
+          if (state.completedTiles%yieldEvery===0 || state.completedTiles===totalSlots) {
+            const pct=5+(state.completedTiles/totalSlots)*90;
+            setProgress(pct,`Rendering ${state.completedTiles.toLocaleString()} / ${totalSlots.toLocaleString()} tiles`+(state.badFiles.size ? ` • ${state.badFiles.size} bad file(s) skipped` : "")+"…");
+            await new Promise(requestAnimationFrame);
+          }
+        }
+
+        const layouts=currentLayouts(W,H,1);
+        if (els.inverseTextTransparent.checked) {
+          outCtx.save(); outCtx.globalCompositeOperation="destination-out";
+          drawCombinedTextDirect(outCtx,layouts,W,"#fff"); outCtx.restore();
+        } else {
+          drawCombinedTextDirect(outCtx,layouts,W,els.inverseTextColour.value);
+        }
+        if (els.inverseTextBorder.checked) {
+          drawCombinedTextStrokeDirect(outCtx,layouts,W,Math.max(1,Number(els.inverseBorderWidth.value||1)),els.inverseBorderColour.value);
+        }
+      } else {
+        for (const {layout,cells} of lineData) {
+          for (const cell of cells) {
+            await renderCheckpoint();
+            const pref=preferred[cursor % preferred.length];
+            cursor++;
+            const used=await renderClippedTileWithFallback(
+              outCtx,pref,cell,overlap,tileCanvas,tileCtx,maskCanvas,maskCtx,layout,W,
+              actualUses,assignmentData.rand,assignmentData.maxUses
+            );
+            if (used !== null) filled++;
+            state.completedTiles++;
+            if (state.completedTiles%yieldEvery===0 || state.completedTiles===totalSlots) {
+              const pct=5+(state.completedTiles/totalSlots)*90;
+              setProgress(pct,`Rendering ${state.completedTiles.toLocaleString()} / ${totalSlots.toLocaleString()} tiles`+(state.badFiles.size ? ` • ${state.badFiles.size} bad file(s) skipped` : "")+"…");
+              await new Promise(requestAnimationFrame);
+            }
+          }
+        }
+      }
+
+      stopTimer();
+      updateLiveTiming();
+      const elapsed=(performance.now()-state.startMs)/1000;
+      state.observedMsPerTile=(performance.now()-state.startMs)/Math.max(1,totalSlots);
+      els.elapsedTime.textContent=formatDuration(elapsed);
+      els.remainingTime.textContent="Done";
+      els.energyWh.textContent=(45*(elapsed/3600)).toFixed(2)+" Wh";
+
+      const usedCount=actualUses.filter(v=>v>0).length;
+      const maxUsed=Math.max(0,...actualUses);
+      const unused=state.files.length-usedCount;
+      setProgress(100,largeMode ? "Render complete. Preparing automatic download…" : "Render complete.");
+
+      state.rendered=true;
+      state.renderName=(inverse ? "inverse_" : "")+(cleanLines().join("_").replace(/[^a-z0-9]+/gi,"_").replace(/^_|_$/g,"")||"photomosaic");
+      els.exportBtn.disabled=largeMode;
+
+      const warning=state.badFiles.size ? `\n${state.badFiles.size} unreadable/unsupported file(s) were skipped automatically.` : "";
+      const baseMessage=
+        `Done. ${filled.toLocaleString()} / ${totalSlots.toLocaleString()} tile slots filled.\n`+
+        `${usedCount.toLocaleString()} unique readable photos used, ${unused.toLocaleString()} unused, maximum ${maxUsed} use(s) of any one file.\n`+
+        `Output: ${W.toLocaleString()} × ${H.toLocaleString()} px. Photos were cropped proportionally, never stretched.`+
+        (inverse ? ` Words are ${els.inverseTextTransparent.checked ? "transparent cut-outs" : "a solid overlay"}.` : "")+warning;
+
+      if (largeMode) {
+        setStatus(baseMessage+"\nEncoding PNG now. The download will start automatically…",state.badFiles.size ? "warn" : "good");
+        await exportPng({automatic:true,clearAfter:true});
+      } else {
+        setStatus(baseMessage,state.badFiles.size ? "warn" : "good");
+        setTimeout(hideProgress,700);
+      }
+
+    } catch (err) {
+      console.error(err);
+      stopTimer(); hideProgress();
+      if (err?.message==="__RENDER_CANCELLED__") setStatus("Render cancelled. Nothing was downloaded.","warn");
+      else setStatus(err?.message || String(err),"error");
+    } finally {
+      state.rendering=false;
+      state.paused=false;
+      state.cancelRequested=false;
+      els.renderBtn.disabled=false;
+      els.pauseBtn.disabled=true;
+      els.pauseBtn.textContent="Pause";
+      els.cancelBtn.disabled=true;
+    }
+  }
+
+  function exportPng(options={}) {
+    const {automatic=false,clearAfter=false}=options;
+    if (!state.rendered) return Promise.resolve(false);
+    const mp=(els.outputCanvas.width*els.outputCanvas.height)/1e6;
+    if (!automatic) setStatus(mp>100 ? "Encoding ultra-high-resolution PNG… Keep this tab open; this may take several minutes." : "Encoding PNG…");
+
+    return new Promise(resolve=>{
+      els.outputCanvas.toBlob(blob=>{
+        if (!blob) { setStatus("PNG export failed. Try reducing render scale slightly.","error"); resolve(false); return; }
+        const url=URL.createObjectURL(blob),a=document.createElement("a");
+        a.href=url; a.download=`${state.renderName}_photomosaic.png`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),3000);
+
+        if (clearAfter) {
+          els.outputCanvas.width=1; els.outputCanvas.height=1;
+          state.rendered=false; els.exportBtn.disabled=true;
+          hideProgress();
+          setStatus("PNG downloaded automatically. The full-resolution canvas was cleared from memory because large render mode was active.","good");
+        } else {
+          setStatus("PNG exported.","good");
+        }
+        resolve(true);
+      },"image/png");
+    });
+  }
+
+  function supportedFile(file) {
+    return /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name.toLowerCase());
+  }
+
+  function handleFolder(files) {
+    const accepted=[...files].filter(supportedFile);
+    state.files=accepted.map(file=>({file}));
+    state.badFiles.clear();
+    state.convertedBlobs.clear();
+    updateSkippedUi();
+    els.statPhotos.textContent=state.files.length.toLocaleString();
+    const heic=accepted.filter(f=>/\.(heic|heif)$/i.test(f.name)).length;
+    setStatus(
+      `${accepted.length.toLocaleString()} image files loaded`+
+      (heic ? `, including ${heic.toLocaleString()} HEIC/HEIF.` : ".")+
+      `\nIf a file cannot be decoded, it will be skipped and the render will continue.`
+    );
+    scheduleEstimateAndPreview();
+  }
+
+  function renderLayoutPreview() {
+    try {
+      const {W:realW,H:realH}=getRenderSize();
+      if (isLargeRender(realW,realH)) return;
+      const canvas=els.layoutPreview,ctx=canvas.getContext("2d");
+      const maxW=1200,maxH=620,scale=Math.min(maxW/realW,maxH/realH);
+      const W=Math.max(300,Math.round(realW*scale)),H=Math.max(180,Math.round(realH*scale));
+      canvas.width=W; canvas.height=H;
+      ctx.clearRect(0,0,W,H);
+
+      const inverse=els.designMode.value==="inverse";
+      if (!els.transparentBg.checked || inverse) {
+        ctx.fillStyle=els.backgroundColour.value; ctx.fillRect(0,0,W,H);
+      }
+
+      const settings=currentLineSettings();
+      const layouts=computeLayouts(W,H,settings,scale);
+      const mask=document.createElement("canvas");
+      const mode=els.colourMode.value;
+      const hue=els.hueColour.value;
+
+      let seedFn=xmur3((els.seed.value||"preview")+"-preview"),rand=mulberry32(seedFn());
+
+      const paintPreviewCell=(targetCtx,cell) => {
+        const v=55+Math.floor(rand()*155);
+        if (mode==="bw") targetCtx.fillStyle=`rgb(${v},${v},${v})`;
+        else if (mode==="hue") {
+          const c=hexToRgb(hue),k=v/255;
+          targetCtx.fillStyle=`rgb(${Math.round(c.r*k)},${Math.round(c.g*k)},${Math.round(c.b*k)})`;
+        } else {
+          const r=80+Math.floor(rand()*170),g=70+Math.floor(rand()*170),b=70+Math.floor(rand()*170);
+          targetCtx.fillStyle=`rgb(${r},${g},${b})`;
+        }
+        const ov=Math.max(0,Number(els.overlap.value||0))*scale;
+        targetCtx.fillRect(cell.x-ov/2,cell.y-ov/2,cell.size+ov,cell.size+ov);
+      };
+
+      if (inverse) {
+        const size=Number(els.photoTileSize.value||190)*scale;
+        collectBackgroundCells(W,H,size).forEach(cell=>paintPreviewCell(ctx,cell));
+        drawCombinedTextMask(mask,layouts,W,H);
+        if (els.inverseTextTransparent.checked) {
+          ctx.globalCompositeOperation="destination-out";
+          ctx.drawImage(mask,0,0);
+          ctx.globalCompositeOperation="source-over";
+        } else {
+          drawColourThroughMask(ctx,mask,els.inverseTextColour.value,W,H);
+        }
+        if (els.inverseTextBorder.checked) {
+          const strokeMask=document.createElement("canvas");
+          drawCombinedTextStrokeMask(
+            strokeMask,layouts,W,H,
+            Math.max(1,Number(els.inverseBorderWidth.value||1))*scale
+          );
+          drawColourThroughMask(ctx,strokeMask,els.inverseBorderColour.value,W,H);
+        }
+        return;
+      }
+
+      for (const layout of layouts) {
+        const maskCtx=drawLineMask(mask,layout,W,H);
+        const cells=collectCells(maskCtx,W,H,layout.tileSize);
+
+        const field=document.createElement("canvas");
+        field.width=W; field.height=H;
+        const fctx=field.getContext("2d");
+
+        for (const cell of cells) {
+          paintPreviewCell(fctx,cell);
+        }
+
+        fctx.globalCompositeOperation="destination-in";
+        fctx.drawImage(mask,0,0);
+        fctx.globalCompositeOperation="source-over";
+        ctx.drawImage(field,0,0);
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  function estimateSlots() {
+    try {
+      const lines=cleanLines(),settings=currentLineSettings();
+      if (!lines.length||settings.length!==lines.length) return;
+
+      const {W:realW,H:realH}=getRenderSize();
+      const scale=Math.min(0.25,1200/realW,800/realH);
+      const W=Math.max(200,Math.round(realW*scale)),H=Math.max(120,Math.round(realH*scale));
+      const layouts=computeLayouts(W,H,settings,scale);
+      const mask=document.createElement("canvas");
+      let slots=0;
+      if (els.designMode.value==="inverse") {
+        slots=collectBackgroundCells(W,H,Number(els.photoTileSize.value||190)*scale).length;
+      } else {
+        for (const layout of layouts) {
+          const ctx=drawLineMask(mask,layout,W,H);
+          slots+=collectCells(ctx,W,H,layout.tileSize).length;
+        }
+      }
+
+      els.statSlots.textContent=slots.toLocaleString();
+      els.statOutput.textContent=`${realW}×${realH}`;
+      els.statRepeats.textContent=state.files.length ? (slots/state.files.length).toFixed(2)+"×" : "—";
+      els.estimatedTime.textContent=formatDuration(roughTimeEstimate(slots,realW,realH));
+    } catch (_) {
+      els.statSlots.textContent="—"; els.statRepeats.textContent="—"; els.estimatedTime.textContent="—";
+    }
+  }
+
+  function scheduleEstimateAndPreview() {
+    updateRenderBehaviour();
+    clearTimeout(state.estimateTimer);
+    state.estimateTimer=setTimeout(()=>{
+      estimateSlots();
+      if (!isLargeRender(getRenderSize().W,getRenderSize().H)) renderLayoutPreview();
+    },180);
+  }
+
+  // Events
+  els.textInput.addEventListener("input",rebuildLineControls);
+  els.folderInput.addEventListener("change",e=>handleFolder(e.target.files));
+  els.renderBtn.addEventListener("click",renderMosaic);
+  els.pauseBtn.addEventListener("click",()=>{
+    if (!state.rendering) return;
+    state.paused=!state.paused;
+    els.pauseBtn.textContent=state.paused?"Resume":"Pause";
+    setStatus(state.paused?"Render paused. Press Resume to continue.":"Render resumed.",state.paused?"warn":"");
+  });
+  els.cancelBtn.addEventListener("click",()=>{
+    if (!state.rendering) return;
+    state.cancelRequested=true;
+    state.paused=false;
+    els.pauseBtn.textContent="Pause";
+    els.pauseBtn.disabled=true;
+    els.cancelBtn.disabled=true;
+    setStatus("Cancelling after the current tile finishes…","warn");
+  });
+  els.exportBtn.addEventListener("click",()=>exportPng());
+  els.printPreset.addEventListener("change",applyPrintPreset);
+  els.printOrientation.addEventListener("change",()=>{
+    if (els.printPreset.value!=="custom") applyPrintPreset();
+    else {
+      const w=els.canvasWidth.value; els.canvasWidth.value=els.canvasHeight.value; els.canvasHeight.value=w;
+      scheduleEstimateAndPreview();
+    }
+  });
+  els.outputScale.addEventListener("input",scheduleEstimateAndPreview);
+  els.outputScale.addEventListener("change",scheduleEstimateAndPreview);
+
+  els.designMode.addEventListener("change",()=>{
+    const inverse=els.designMode.value==="inverse";
+    els.inverseControls.style.display=inverse?"block":"none";
+    els.transparentBg.disabled=inverse;
+    scheduleEstimateAndPreview();
+  });
+
+  els.inverseTextTransparent.addEventListener("change",()=>{
+    els.inverseTextColour.disabled=els.inverseTextTransparent.checked;
+    scheduleEstimateAndPreview();
+  });
+
+  els.inverseTextBorder.addEventListener("change",()=>{
+    els.inverseBorderControls.style.display=els.inverseTextBorder.checked?"grid":"none";
+    scheduleEstimateAndPreview();
+  });
+
+  els.photoTileSize.addEventListener("input",()=>{
+    if (els.designMode.value==="text") {
+      els.lineControls.querySelectorAll(".line-tile").forEach(input=>{
+        input.value=els.photoTileSize.value;
+      });
+    }
+    scheduleEstimateAndPreview();
+  });
+
+  els.photoTileSize.addEventListener("change",scheduleEstimateAndPreview);
+
+  els.colourMode.addEventListener("change",()=>{
+    els.hueControls.style.display=els.colourMode.value==="hue"?"block":"none";
+    scheduleEstimateAndPreview();
+  });
+
+  [
+    els.fontFamily,els.lineGap,els.tracking,els.maxUses,
+    els.overlap,els.backgroundColour,els.transparentBg,els.inverseTextColour,
+    els.inverseBorderColour,els.inverseBorderWidth,
+    els.hueColour,els.hueStrength,
+    els.brightness,els.contrast,els.saturation,els.focusX,els.focusY,els.seed
+  ].forEach(el=>{
+    el.addEventListener("input",scheduleEstimateAndPreview);
+    el.addEventListener("change",scheduleEstimateAndPreview);
+  });
+
+  [els.canvasWidth,els.canvasHeight].forEach(el=>{
+    el.addEventListener("input",()=>{
+      if (!state.applyingPreset) els.printPreset.value="custom";
+      scheduleEstimateAndPreview();
+    });
+    el.addEventListener("change",()=>{
+      if (!state.applyingPreset) els.printPreset.value="custom";
+      scheduleEstimateAndPreview();
+    });
+  });
+
+  rebuildLineControls();
+  updateRenderBehaviour();
+
+  const outCtx=els.outputCanvas.getContext("2d");
+  outCtx.fillStyle="#000"; outCtx.fillRect(0,0,els.outputCanvas.width,els.outputCanvas.height);
+  outCtx.fillStyle="#777"; outCtx.font="700 38px Arial"; outCtx.textAlign="center";
+  outCtx.fillText("Full-resolution mosaic appears here",els.outputCanvas.width/2,els.outputCanvas.height/2);
+})();
+</script>
+</body>
+</html>
